@@ -2,6 +2,7 @@ import { Body, Controller, Logger, Post } from '@nestjs/common';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { UserService } from './user.service';
 
@@ -10,6 +11,7 @@ import { UserService } from './user.service';
  *
  * Endpoints:
  * - `POST /user/register` — create a new account and receive a JWT.
+ * - `POST /user/login` — authenticate and receive a JWT.
  * - `POST /user/forgot-password` — initiate a password-reset flow.
  * - `POST /user/reset-password` — validate a reset token and set a new password.
  */
@@ -28,6 +30,18 @@ export class UserController {
   @Post('register')
   register(@Body() createUserDto: CreateUserDto): Promise<{ token: string }> {
     return this.userService.register(createUserDto);
+  }
+
+  /**
+   * Authenticates a user and returns a signed JWT.
+   *
+   * @param dto - Validated payload containing email and password.
+   * @returns An object containing the signed JWT string.
+   * @throws {UnauthorizedException} When the credentials are invalid.
+   */
+  @Post('login')
+  login(@Body() dto: LoginDto): Promise<{ token: string }> {
+    return this.userService.login(dto);
   }
 
   /**

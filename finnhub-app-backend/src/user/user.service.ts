@@ -6,6 +6,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -18,6 +19,7 @@ import { errorHandler } from 'src/common/error/error-handler';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { LoginDto } from './dto/login.dto';
 import { User } from './entities/user.entity';
 
 /**
@@ -81,6 +83,37 @@ export class UserService {
       return { token };
     } catch (error) {
       return errorHandler('Failed to register user', this.logger, error);
+    }
+  }
+
+  /**
+   * Authenticates a user with email and password.
+   *
+   * The password column is excluded from queries by default (`select: false`),
+   * so it is explicitly re-selected here for the bcrypt comparison only.
+   *
+   * @param dto - Validated login payload containing email and password.
+   * @returns An object containing a signed JWT string.
+   * @throws {UnauthorizedException} When the email is not found or the password does not match.
+   * @throws {InternalServerErrorException} On any unexpected error.
+   */
+  async login(dto: LoginDto): Promise<{ token: string }> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { email: dto.email },
+        select: { id: true, email: true, password: true },
+      });
+
+      if (!user || !(await bcrypt.compare(dto.password, user.password))) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      const payload: JwtPayload = { id: user.id };
+      const token = this.jwtService.sign(payload);
+
+      return { token };
+    } catch (error) {
+      return errorHandler('Failed to login', this.logger, error);
     }
   }
 

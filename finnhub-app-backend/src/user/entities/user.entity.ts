@@ -48,12 +48,6 @@ export class User {
   lastName: string;
 
   /**
-   * Indicates whether the account is active. Defaults to `true` upon creation.
-   */
-  @Column({ default: true })
-  isActive: boolean;
-
-  /**
    * Timestamp recording when the user record was first persisted.
    */
   @CreateDateColumn()
