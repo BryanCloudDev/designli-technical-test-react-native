@@ -1,11 +1,22 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import { createHash, randomBytes } from 'crypto';
+
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
-import { errorHandler } from 'src/common/error/error-handler';
+import { PasswordResetToken } from './entities/password-reset-token.entity';
 import { JwtPayload } from 'src/auth/interfaces/jwt-payload.interface';
+import { errorHandler } from 'src/common/error/error-handler';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 
@@ -23,6 +34,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(PasswordResetToken)
+    private readonly tokenRepository: Repository<PasswordResetToken>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -67,7 +80,132 @@ export class UserService {
 
       return { token };
     } catch (error) {
-      errorHandler('Failed to register user', this.logger, error);
+      return errorHandler('Failed to register user', this.logger, error);
+    }
+  }
+
+  /**
+   * Initiates a password-reset flow for the given email address.
+   *
+   * A SHA-256 hash of a cryptographically random 32-byte token is stored in
+   * the database. Any previously active (unused) tokens for the same user are
+   * invalidated before the new one is created, preventing token accumulation.
+   *
+   * **Security note — no user enumeration:** If the email address is not found
+   * the method returns the same generic success response as when it is found,
+   * so that an attacker cannot determine whether a particular email is
+   * registered.
+   *
+   * **Development only:** The raw token is included in the return value and
+   * logged at WARN level so that it can be used during local testing without
+   * an email provider. In production this value MUST be removed from the
+   * response and delivered exclusively via a transactional email.
+   *
+   * @param dto - Validated forgot-password payload containing the target email.
+   * @returns An object with a generic success message and, for development
+   *   purposes only, the raw reset token. In production the `resetToken` field
+   *   must be stripped and sent via email instead.
+   * @throws {InternalServerErrorException} On any unexpected database error.
+   */
+  async forgotPassword(
+    dto: ForgotPasswordDto,
+  ): Promise<{ message: string; resetToken: string }> {
+    try {
+      const genericResponse = {
+        message:
+          'If that email is registered you will receive a reset link shortly',
+        resetToken: '',
+      };
+
+      const user = await this.userRepository.findOne({
+        where: { email: dto.email },
+      });
+
+      if (!user) {
+        return genericResponse;
+      }
+
+      await this.tokenRepository.update(
+        { userId: user.id, used: false },
+        { used: true },
+      );
+
+      const rawToken = randomBytes(32).toString('hex');
+      const tokenHash = createHash('sha256').update(rawToken).digest('hex');
+
+      const tokenRecord = this.tokenRepository.create({
+        tokenHash,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      });
+
+      await this.tokenRepository.save(tokenRecord);
+
+      this.logger.warn(
+        `[DEV ONLY] Password reset token for ${dto.email}: ${rawToken}`,
+      );
+
+      return {
+        message:
+          'If that email is registered you will receive a reset link shortly',
+        resetToken: rawToken,
+      };
+    } catch (error) {
+      return errorHandler(
+        'Failed to process password reset request',
+        this.logger,
+        error,
+      );
+    }
+  }
+
+  /**
+   * Validates a password-reset token and sets the user's new password.
+   *
+   * Steps:
+   * 1. Hash the incoming raw token with SHA-256.
+   * 2. Look up a matching, unused {@link PasswordResetToken} record.
+   * 3. Reject the request if the token has passed its expiry timestamp.
+   * 4. Hash the new password with bcrypt (10 salt rounds).
+   * 5. Persist the new password hash on the user row.
+   * 6. Mark the token record as used to prevent replay attacks.
+   *
+   * @param dto - Validated reset-password payload containing the raw token and
+   *   the new password.
+   * @returns A success message confirming the password was changed.
+   * @throws {NotFoundException} When no valid (unused) token matches the
+   *   provided value.
+   * @throws {BadRequestException} When the matching token has expired.
+   * @throws {InternalServerErrorException} On any unexpected database error.
+   */
+  async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    try {
+      const tokenHash = createHash('sha256').update(dto.token).digest('hex');
+
+      const tokenRecord = await this.tokenRepository.findOne({
+        where: { tokenHash, used: false },
+      });
+
+      if (!tokenRecord) {
+        throw new NotFoundException('Reset token not found or already used');
+      }
+
+      if (tokenRecord.expiresAt < new Date()) {
+        throw new BadRequestException('Reset token has expired');
+      }
+
+      const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+
+      await this.userRepository.update(
+        { id: tokenRecord.userId },
+        { password: hashedPassword },
+      );
+
+      await this.tokenRepository.update({ id: tokenRecord.id }, { used: true });
+
+      return { message: 'Password reset successfully' };
+    } catch (error) {
+      return errorHandler('Failed to reset password', this.logger, error);
     }
   }
 }
