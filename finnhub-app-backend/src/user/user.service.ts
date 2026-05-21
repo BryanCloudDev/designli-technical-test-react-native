@@ -21,6 +21,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from './entities/user.entity';
+import { RegisterFcmTokenDto } from './dto/register-fcm-token.dto';
 
 /**
  * Service responsible for all user-related business logic.
@@ -211,6 +212,29 @@ export class UserService {
    * @throws {BadRequestException} When the matching token has expired.
    * @throws {InternalServerErrorException} On any unexpected database error.
    */
+  /**
+   * Stores (or updates) the FCM device token for push notifications.
+   *
+   * Called by the React Native client immediately after login or when the
+   * FCM token is refreshed. Only the authenticated user can update their
+   * own token.
+   *
+   * @param userId - UUID of the authenticated user.
+   * @param dto    - Payload containing the raw FCM token string.
+   * @returns A generic success message.
+   */
+  async registerFcmToken(
+    userId: string,
+    dto: RegisterFcmTokenDto,
+  ): Promise<{ message: string }> {
+    try {
+      await this.userRepository.update({ id: userId }, { fcmToken: dto.token });
+      return { message: 'FCM token registered successfully' };
+    } catch (error) {
+      return errorHandler('Failed to register FCM token', this.logger, error);
+    }
+  }
+
   async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
     try {
       const tokenHash = createHash('sha256').update(dto.token).digest('hex');

@@ -1,8 +1,10 @@
-import { Body, Controller, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Logger, Patch, Post, Request } from '@nestjs/common';
 
+import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
+import { RegisterFcmTokenDto } from './dto/register-fcm-token.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { UserService } from './user.service';
 
@@ -10,10 +12,11 @@ import { UserService } from './user.service';
  * REST controller that exposes user-related endpoints under the `/user` path.
  *
  * Endpoints:
- * - `POST /user/register` — create a new account and receive a JWT.
- * - `POST /user/login` — authenticate and receive a JWT.
- * - `POST /user/forgot-password` — initiate a password-reset flow.
- * - `POST /user/reset-password` — validate a reset token and set a new password.
+ * - `POST  /user/register`      — create a new account and receive a JWT.
+ * - `POST  /user/login`         — authenticate and receive a JWT.
+ * - `POST  /user/forgot-password` — initiate a password-reset flow.
+ * - `POST  /user/reset-password`  — validate a reset token and set a new password.
+ * - `PATCH /user/fcm-token`     — register or refresh the device FCM token (auth required).
  */
 @Controller('user')
 export class UserController {
@@ -77,5 +80,25 @@ export class UserController {
   @Post('reset-password')
   resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
     return this.userService.resetPassword(dto);
+  }
+
+  /**
+   * Stores (or refreshes) the caller's FCM device token.
+   *
+   * The React Native client must call this endpoint after login and whenever
+   * `messaging().onTokenRefresh` fires, so the backend always has a valid
+   * token to use when dispatching price-alert notifications.
+   *
+   * @param req - Express request; `req.user` is the authenticated `User`.
+   * @param dto - Validated body containing the raw FCM token string.
+   * @returns A generic success message.
+   */
+  @Auth()
+  @Patch('fcm-token')
+  registerFcmToken(
+    @Request() req: { user: { id: string } },
+    @Body() dto: RegisterFcmTokenDto,
+  ): Promise<{ message: string }> {
+    return this.userService.registerFcmToken(req.user.id, dto);
   }
 }

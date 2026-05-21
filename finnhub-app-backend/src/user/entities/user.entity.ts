@@ -48,6 +48,14 @@ export class User {
   lastName: string;
 
   /**
+   * Firebase Cloud Messaging device token used to send push notifications.
+   * Registered by the React Native client after obtaining permission.
+   * Nullable — users without a token simply will not receive push alerts.
+   */
+  @Column({ nullable: true, length: 255 })
+  fcmToken?: string;
+
+  /**
    * Timestamp recording when the user record was first persisted.
    */
   @CreateDateColumn()

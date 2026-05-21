@@ -9,4 +9,7 @@ export const JoiValidationSchema = Joi.object({
   JWT_SECRET: Joi.string().required(),
   PORT: Joi.number().default(3000),
   FINNHUB_API_KEY: Joi.string().required(),
+  FIREBASE_PROJECT_ID: Joi.string().required(),
+  FIREBASE_CLIENT_EMAIL: Joi.string().required(),
+  FIREBASE_PRIVATE_KEY: Joi.string().required(),
 });

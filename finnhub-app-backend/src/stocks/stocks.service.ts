@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { errorHandler } from 'src/common/error/error-handler';
 import { HttpClient } from 'src/common/http/http-client';
+import { PriceAlertsService } from 'src/price-alerts/price-alerts.service';
 import {
   FinnhubQuote,
   FinnhubStockSymbol,
@@ -110,6 +111,7 @@ export class StocksService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly httpClient: HttpClient,
     private readonly configService: ConfigService,
+    private readonly priceAlertsService: PriceAlertsService,
   ) {}
 
   private get apiKey(): string {
@@ -307,6 +309,11 @@ export class StocksService implements OnModuleInit, OnModuleDestroy {
           timestamp: Date.now(),
           price: quote.currentPrice,
         });
+        // Check price alerts after each successful poll
+        await this.priceAlertsService.checkAndTrigger(
+          symbol,
+          quote.currentPrice,
+        );
       } catch {
         // Swallow individual failures; will retry on next interval
       }
