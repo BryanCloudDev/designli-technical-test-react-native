@@ -1,0 +1,16 @@
+{
+  "name": "finnhub-app",
+  "version": "0.0.1",
+  "private": true,
+  "workspaces": [
+    "finnhub-app-backend",
+    "finnhub-app-frontend"
+  ],
+  "scripts": {
+    "backend": "npm run start:dev -w finnhub-app-backend",
+    "frontend": "npm run start -w finnhub-app-frontend",
+    "build": "npm run build -w finnhub-app-backend",
+    "test": "npm run test -w finnhub-app-backend",
+    "lint": "npm run lint --workspaces --if-present"
+  }
+}
