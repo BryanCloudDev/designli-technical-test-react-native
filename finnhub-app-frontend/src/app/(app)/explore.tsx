@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useRouter } from 'expo-router';
 
@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth.context';
 import { useTheme } from '@/hooks/use-theme';
+import { priceAlertsApi } from '@/services/api';
 
 type MenuItem = {
   label: string;
@@ -22,8 +23,16 @@ const MENU_ITEMS: MenuItem[] = [
 export default function AccountScreen() {
   const theme = useTheme();
   const router = useRouter();
-  const { logout } = useAuth();
+  const { token, logout } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [alertsCount, setAlertsCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+    priceAlertsApi.findAll(token)
+      .then((alerts) => setAlertsCount(alerts.length))
+      .catch(() => setAlertsCount(0));
+  }, [token]);
 
   function getMenuItemPress(label: string) {
     if (label === 'Price Alerts') return () => router.push('/price-alerts');
@@ -67,7 +76,7 @@ export default function AccountScreen() {
           <View style={styles.statsRow}>
             {[
               { label: 'Watchlist', value: '6' },
-              { label: 'Alerts', value: '0' },
+              { label: 'Alerts', value: alertsCount === null ? '…' : String(alertsCount) },
               { label: 'Portfolios', value: '1' },
             ].map((stat) => (
               <View
