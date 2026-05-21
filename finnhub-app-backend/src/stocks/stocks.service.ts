@@ -34,6 +34,12 @@ const MAX_HISTORY_POINTS = 200;
 /** Quote polling interval for active symbols (2 minutes) */
 const POLL_INTERVAL_MS = 2 * 60 * 1000;
 
+/** Short-lived quote cache TTL to avoid redundant API calls (30 seconds) */
+const QUOTE_CACHE_TTL = 30_000;
+
+/** Minimum delay between consecutive Finnhub API calls to avoid 429s */
+const API_CALL_DELAY_MS = 100;
+
 /** Symbol universe TTL: refresh once per day */
 const SYMBOLS_CACHE_TTL = 24 * 60 * 60 * 1000;
 
@@ -107,6 +113,9 @@ export class StocksService implements OnModuleInit, OnModuleDestroy {
   // ── Active symbols polled for quote updates ────────────────────────────────
   private readonly activeSymbols = new Set<string>();
   private pollingTimer: ReturnType<typeof setInterval> | null = null;
+
+  // ── Quote cache ────────────────────────────────────────────────────────────
+  private readonly quoteCache = new Map<string, { quote: StockQuote; expiresAt: number }>();
 
   constructor(
     private readonly httpClient: HttpClient,
@@ -201,12 +210,13 @@ export class StocksService implements OnModuleInit, OnModuleDestroy {
       this.activeSymbols.clear();
       entries.forEach(({ symbol }) => this.activeSymbols.add(symbol));
 
-      // Fetch all quotes concurrently
-      const quotes = await Promise.all(
-        entries.map(({ symbol, name }) =>
-          this.getQuote(symbol).then((q) => ({ ...q, name })),
-        ),
-      );
+      // Fetch quotes sequentially to avoid bursting Finnhub's rate limit
+      const quotes: StockQuote[] = [];
+      for (const { symbol, name } of entries) {
+        const q = await this.getQuote(symbol);
+        quotes.push({ ...q, name });
+        await this.delay(API_CALL_DELAY_MS);
+      }
 
       // Seed price history with current price for any symbol with no history yet
       const now = Date.now();
@@ -233,14 +243,18 @@ export class StocksService implements OnModuleInit, OnModuleDestroy {
    * @param symbol - Ticker symbol, e.g. 'AAPL'.
    */
   async getQuote(symbol: string): Promise<StockQuote> {
+    const upper = symbol.toUpperCase();
+    const cached = this.quoteCache.get(upper);
+    if (cached && Date.now() < cached.expiresAt) return cached.quote;
+
     try {
       const data = await this.httpClient.get<FinnhubQuote>(
         `${FINNHUB_BASE_URL}/quote`,
-        { params: { symbol: symbol.toUpperCase(), token: this.apiKey } },
+        { params: { symbol: upper, token: this.apiKey } },
       );
 
-      return {
-        symbol: symbol.toUpperCase(),
+      const quote: StockQuote = {
+        symbol: upper,
         name: '',
         currentPrice: data.c,
         change: data.d,
@@ -251,6 +265,9 @@ export class StocksService implements OnModuleInit, OnModuleDestroy {
         previousClose: data.pc,
         timestamp: data.t,
       };
+
+      this.quoteCache.set(upper, { quote, expiresAt: Date.now() + QUOTE_CACHE_TTL });
+      return quote;
     } catch (error) {
       return errorHandler(
         `Failed to fetch quote for ${symbol}`,
@@ -317,6 +334,7 @@ export class StocksService implements OnModuleInit, OnModuleDestroy {
       } catch {
         // Swallow individual failures; will retry on next interval
       }
+      await this.delay(API_CALL_DELAY_MS);
     }
   }
 
@@ -350,6 +368,10 @@ export class StocksService implements OnModuleInit, OnModuleDestroy {
   }
 
   // ── Utilities ──────────────────────────────────────────────────────────────
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 
   private fisherYatesShuffle<T>(arr: T[]): T[] {
     const copy = [...arr];
