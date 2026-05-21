@@ -1,0 +1,194 @@
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from 'react';
+
+import { ThemedView } from '@/components/themed-view';
+import { BottomTabInset, Spacing } from '@/constants/theme';
+import { useAuth } from '@/context/auth.context';
+import { useTheme } from '@/hooks/use-theme';
+
+type MenuItem = {
+  label: string;
+  icon: string;
+  danger?: boolean;
+};
+
+const MENU_ITEMS: MenuItem[] = [
+  { label: 'Notifications', icon: '🔔' },
+  { label: 'Price Alerts', icon: '📈' },
+  { label: 'Watchlists', icon: '⭐' },
+  { label: 'Privacy & Security', icon: '🔒' },
+  { label: 'Help & Support', icon: '💬' },
+  { label: 'About Finnhub', icon: 'ℹ️' },
+];
+
+export default function AccountScreen() {
+  const theme = useTheme();
+  const { logout } = useAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    await logout();
+  }
+
+  return (
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        {/* Header */}
+        <View style={[styles.header, { borderBottomColor: theme.border }]}>
+          <Text style={[styles.headerTitle, { color: theme.text }]}>Account</Text>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={[styles.scroll, { paddingBottom: BottomTabInset + Spacing.four }]}
+          showsVerticalScrollIndicator={false}>
+
+          {/* Profile Card */}
+          <View style={[styles.profileCard, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
+            <View style={[styles.avatar, { backgroundColor: theme.gain }]}>
+              <Text style={styles.avatarText}>F</Text>
+            </View>
+            <View style={styles.profileInfo}>
+              <Text style={[styles.profileName, { color: theme.text }]}>Finnhub Investor</Text>
+              <Text style={[styles.profileSub, { color: theme.textSecondary }]}>
+                Premium Account
+              </Text>
+            </View>
+            <View style={[styles.planBadge, { backgroundColor: theme.accent + '20' }]}>
+              <Text style={[styles.planText, { color: theme.accent }]}>PRO</Text>
+            </View>
+          </View>
+
+          {/* Portfolio Stats */}
+          <View style={styles.statsRow}>
+            {[
+              { label: 'Watchlist', value: '6' },
+              { label: 'Alerts', value: '0' },
+              { label: 'Portfolios', value: '1' },
+            ].map((stat) => (
+              <View
+                key={stat.label}
+                style={[styles.statCard, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
+                <Text style={[styles.statValue, { color: theme.text }]}>{stat.value}</Text>
+                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{stat.label}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Menu */}
+          <View style={[styles.menuCard, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
+            {MENU_ITEMS.map((item, i) => (
+              <View key={item.label}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.menuRow,
+                    pressed && { backgroundColor: theme.backgroundSelected },
+                  ]}>
+                  <Text style={styles.menuIcon}>{item.icon}</Text>
+                  <Text style={[styles.menuLabel, { color: theme.text }]}>{item.label}</Text>
+                  <Text style={[styles.menuChevron, { color: theme.textSecondary }]}>›</Text>
+                </Pressable>
+                {i < MENU_ITEMS.length - 1 && (
+                  <View style={[styles.divider, { backgroundColor: theme.border }]} />
+                )}
+              </View>
+            ))}
+          </View>
+
+          {/* Sign Out */}
+          <Pressable
+            onPress={handleLogout}
+            disabled={loggingOut}
+            style={({ pressed }) => [
+              styles.signOutBtn,
+              { backgroundColor: theme.loss + '15', borderColor: theme.loss },
+              pressed && { opacity: 0.7 },
+              loggingOut && { opacity: 0.5 },
+            ]}>
+            {loggingOut ? (
+              <ActivityIndicator color={theme.loss} />
+            ) : (
+              <Text style={[styles.signOutText, { color: theme.loss }]}>Sign Out</Text>
+            )}
+          </Pressable>
+
+          <Text style={[styles.version, { color: theme.textSecondary }]}>Finnhub v1.0.0</Text>
+        </ScrollView>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  safeArea: { flex: 1 },
+  header: {
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.three,
+    borderBottomWidth: 1,
+  },
+  headerTitle: { fontSize: 24, fontWeight: '700' },
+  scroll: { paddingHorizontal: Spacing.four, paddingTop: Spacing.four, gap: Spacing.three },
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: Spacing.four,
+    gap: Spacing.three,
+  },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: { fontSize: 24, fontWeight: '700', color: '#fff' },
+  profileInfo: { flex: 1 },
+  profileName: { fontSize: 17, fontWeight: '600' },
+  profileSub: { fontSize: 13, marginTop: 2 },
+  planBadge: {
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.one,
+    borderRadius: 8,
+  },
+  planText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
+  statsRow: { flexDirection: 'row', gap: Spacing.two },
+  statCard: {
+    flex: 1,
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: Spacing.three,
+    alignItems: 'center',
+    gap: Spacing.one,
+  },
+  statValue: { fontSize: 22, fontWeight: '700' },
+  statLabel: { fontSize: 12 },
+  menuCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.three,
+    gap: Spacing.three,
+  },
+  menuIcon: { fontSize: 18, width: 28, textAlign: 'center' },
+  menuLabel: { flex: 1, fontSize: 15, fontWeight: '500' },
+  menuChevron: { fontSize: 20, fontWeight: '300' },
+  divider: { height: 1, marginLeft: 52 + Spacing.three * 2 },
+  signOutBtn: {
+    height: 52,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signOutText: { fontSize: 16, fontWeight: '600' },
+  version: { fontSize: 12, textAlign: 'center', paddingBottom: Spacing.two },
+});
