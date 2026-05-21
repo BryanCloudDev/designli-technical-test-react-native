@@ -42,7 +42,7 @@ export default function AccountScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         {/* Header */}
         <View style={[styles.header, { borderBottomColor: theme.border }]}>
           <Text style={[styles.headerTitle, { color: theme.text }]}>Account</Text>
