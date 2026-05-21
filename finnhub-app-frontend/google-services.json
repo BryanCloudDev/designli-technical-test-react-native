@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "570663758559",
+    "project_id": "finnhubdesignlitestapp",
+    "storage_bucket": "finnhubdesignlitestapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:570663758559:android:cdf68a8642b50437ae976a",
+        "android_client_info": {
+          "package_name": "com.finnhub.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPOsQdsy-Gs0yp79jZkccWyOc-dgg7tJk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

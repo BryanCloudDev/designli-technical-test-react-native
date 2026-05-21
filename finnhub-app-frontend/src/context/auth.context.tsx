@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import { authApi, LoginPayload, RegisterPayload } from '@/services/api';
+import { getDeviceFcmToken } from '@/services/notifications';
 import { secureStorage } from '@/services/secure-storage';
 import { stockSocket } from '@/services/socket';
 
@@ -30,12 +31,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     secureStorage.getItem(TOKEN_KEY).then((token) => {
       setState({ token, isAuthenticated: !!token, isLoading: false });
+      if (token) {
+        getDeviceFcmToken().then((fcmToken) => {
+          if (fcmToken) authApi.registerFcmToken(fcmToken, token);
+        });
+      }
     });
   }, []);
 
   const persistToken = useCallback(async (token: string) => {
     await secureStorage.setItem(TOKEN_KEY, token);
     setState({ token, isAuthenticated: true, isLoading: false });
+    getDeviceFcmToken().then((fcmToken) => {
+      if (fcmToken) authApi.registerFcmToken(fcmToken, token);
+    });
   }, []);
 
   const login = useCallback(

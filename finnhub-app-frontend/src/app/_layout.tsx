@@ -20,6 +20,7 @@ function RootStack() {
       <Stack.Protected guard={isAuthenticated}>
         <Stack.Screen name="(app)" />
         <Stack.Screen name="stock/[symbol]" />
+        <Stack.Screen name="price-alerts" />
       </Stack.Protected>
       <Stack.Protected guard={!isAuthenticated}>
         <Stack.Screen name="login" />

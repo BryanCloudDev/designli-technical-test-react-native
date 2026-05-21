@@ -4,8 +4,8 @@ type ApiError = { message: string | string[]; statusCode: number };
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options,
+    headers: { 'Content-Type': 'application/json', ...options.headers },
   });
 
   if (!response.ok) {
@@ -97,6 +97,37 @@ export type PriceHistoryResponse = {
 };
 
 const authHeader = (token: string) => ({ Authorization: `Bearer ${token}` });
+
+// ── Price Alerts ───────────────────────────────────────────────────────────────
+
+export type PriceAlert = {
+  id: string;
+  userId: string;
+  symbol: string;
+  targetPrice: number;
+  isTriggered: boolean;
+  createdAt: string;
+};
+
+export const priceAlertsApi = {
+  create: (data: { symbol: string; targetPrice: number }, token: string) =>
+    request<PriceAlert>('/price-alerts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: authHeader(token),
+    }),
+
+  findAll: (token: string) =>
+    request<PriceAlert[]>('/price-alerts', { headers: authHeader(token) }),
+
+  remove: (id: string, token: string) =>
+    request<{ message: string }>(`/price-alerts/${id}`, {
+      method: 'DELETE',
+      headers: authHeader(token),
+    }),
+};
+
+// ── Stocks ────────────────────────────────────────────────────────────────────
 
 export const stocksApi = {
   getStockList: (token: string) =>

@@ -2,6 +2,8 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 
+import { useRouter } from 'expo-router';
+
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth.context';
@@ -24,8 +26,14 @@ const MENU_ITEMS: MenuItem[] = [
 
 export default function AccountScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const { logout } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
+
+  function getMenuItemPress(label: string) {
+    if (label === 'Price Alerts') return () => router.push('/price-alerts');
+    return undefined;
+  }
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -81,6 +89,7 @@ export default function AccountScreen() {
             {MENU_ITEMS.map((item, i) => (
               <View key={item.label}>
                 <Pressable
+                  onPress={getMenuItemPress(item.label)}
                   style={({ pressed }) => [
                     styles.menuRow,
                     pressed && { backgroundColor: theme.backgroundSelected },
