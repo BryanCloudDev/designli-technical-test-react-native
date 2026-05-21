@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 
 import { authApi, LoginPayload, RegisterPayload } from '@/services/api';
 import { secureStorage } from '@/services/secure-storage';
+import { stockSocket } from '@/services/socket';
 
 const TOKEN_KEY = 'finnhub_auth_token';
 
@@ -54,6 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const logout = useCallback(async () => {
+    stockSocket.disconnect();
     await secureStorage.deleteItem(TOKEN_KEY);
     setState({ token: null, isAuthenticated: false, isLoading: false });
   }, []);

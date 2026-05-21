@@ -64,3 +64,57 @@ export const authApi = {
       headers: { Authorization: `Bearer ${authToken}` },
     }),
 };
+
+// ── Stocks ────────────────────────────────────────────────────────────────────
+
+export type StockQuote = {
+  symbol: string;
+  name: string;
+  currentPrice: number;
+  change: number;
+  percentChange: number;
+  high: number;
+  low: number;
+  open: number;
+  previousClose: number;
+  timestamp: number;
+};
+
+export type StockSearchResult = {
+  symbol: string;
+  name: string;
+  type: string;
+};
+
+export type PricePoint = {
+  timestamp: number;
+  price: number;
+};
+
+export type PriceHistoryResponse = {
+  symbol: string;
+  points: PricePoint[];
+};
+
+const authHeader = (token: string) => ({ Authorization: `Bearer ${token}` });
+
+export const stocksApi = {
+  getStockList: (token: string) =>
+    request<StockQuote[]>('/stocks', { headers: authHeader(token) }),
+
+  searchSymbol: (q: string, token: string) =>
+    request<StockSearchResult[]>(`/stocks/search?q=${encodeURIComponent(q)}`, {
+      headers: authHeader(token),
+    }),
+
+  getQuote: (symbol: string, token: string) =>
+    request<StockQuote>(`/stocks/${encodeURIComponent(symbol)}/quote`, {
+      headers: authHeader(token),
+    }),
+
+  getPriceHistory: (symbol: string, token: string) =>
+    request<PriceHistoryResponse>(
+      `/stocks/${encodeURIComponent(symbol)}/price-history`,
+      { headers: authHeader(token) },
+    ),
+};
