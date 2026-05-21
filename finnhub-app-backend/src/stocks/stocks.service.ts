@@ -319,7 +319,10 @@ export class StocksService implements OnModuleInit, OnModuleDestroy {
    * as a free alternative to the premium candle endpoint.
    */
   private async pollActiveSymbols(): Promise<void> {
-    for (const symbol of this.activeSymbols) {
+    const alertSymbols = await this.priceAlertsService.getPendingAlertSymbols();
+    const symbolsToPoll = new Set([...this.activeSymbols, ...alertSymbols]);
+
+    for (const symbol of symbolsToPoll) {
       try {
         const quote = await this.getQuote(symbol);
         this.addPricePoint(symbol, {

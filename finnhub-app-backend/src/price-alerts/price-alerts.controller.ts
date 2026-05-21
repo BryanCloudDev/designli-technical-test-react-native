@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Logger,
   Param,
   ParseUUIDPipe,
   Post,
@@ -13,6 +12,7 @@ import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CreatePriceAlertDto } from './dto/create-price-alert.dto';
+import { TriggerTestDto } from './dto/trigger-test.dto';
 import { PriceAlertsService } from './price-alerts.service';
 
 /**
@@ -29,8 +29,6 @@ import { PriceAlertsService } from './price-alerts.service';
 @Auth()
 @Controller('price-alerts')
 export class PriceAlertsController {
-  private readonly logger = new Logger(PriceAlertsController.name);
-
   constructor(private readonly priceAlertsService: PriceAlertsService) {}
 
   /**
@@ -74,5 +72,19 @@ export class PriceAlertsController {
     @Request() req: { user: { id: string } },
   ) {
     return this.priceAlertsService.remove(id, req.user.id);
+  }
+
+  /**
+   * DEV ONLY — simulates a price update for a symbol so you can test alert
+   * notifications without waiting for the market to be open or the poll cycle.
+   *
+   * Example: POST /price-alerts/trigger-test { "symbol": "AAPL", "price": 999 }
+   * Any alert whose targetPrice ≤ 999 will fire immediately.
+   */
+  @Post('trigger-test')
+  @ApiOperation({ summary: '[Dev] Simulate a price update to test alert notifications' })
+  async triggerTest(@Body() dto: TriggerTestDto) {
+    await this.priceAlertsService.checkAndTrigger(dto.symbol, dto.price);
+    return { message: `checkAndTrigger called for ${dto.symbol} @ $${dto.price}` };
   }
 }

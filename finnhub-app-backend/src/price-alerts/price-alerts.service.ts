@@ -83,6 +83,24 @@ export class PriceAlertsService {
   }
 
   /**
+   * Returns the unique set of ticker symbols that have at least one pending
+   * (non-triggered) alert. Used by StocksService to ensure every alerted
+   * symbol is included in the polling loop regardless of what is shown on
+   * the Markets screen.
+   */
+  async getPendingAlertSymbols(): Promise<string[]> {
+    try {
+      const alerts = await this.alertRepository.find({
+        where: { isTriggered: false },
+        select: ['symbol'],
+      });
+      return [...new Set(alerts.map((a) => a.symbol))];
+    } catch (error) {
+      return errorHandler('Failed to fetch pending alert symbols', this.logger, error);
+    }
+  }
+
+  /**
    * Checks whether any non-triggered alert for `symbol` has been crossed by
    * the latest `price`. Called by StocksService on every polling cycle.
    *

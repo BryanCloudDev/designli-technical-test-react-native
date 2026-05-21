@@ -57,6 +57,9 @@ export class NotificationsService implements OnModuleInit {
           title: `📈 Price Alert: ${symbol}`,
           body: `${symbol} has reached $${currentPrice.toFixed(2)} (your target: $${targetPrice.toFixed(2)})`,
         },
+        android: {
+          notification: { channelId: 'price-alerts' },
+        },
         data: {
           symbol,
           currentPrice: String(currentPrice),

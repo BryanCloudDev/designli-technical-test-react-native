@@ -196,15 +196,9 @@ export default function MarketsScreen() {
           <View>
             <Text style={[styles.headerTitle, { color: theme.text }]}>Markets</Text>
             <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
-              Live market overview
+              Market overview
             </Text>
           </View>
-          {!isSearchMode && (
-            <View style={[styles.headerBadge, { backgroundColor: theme.gain + '20' }]}>
-              <View style={[styles.liveDot, { backgroundColor: theme.gain }]} />
-              <Text style={[styles.liveText, { color: theme.gain }]}>LIVE</Text>
-            </View>
-          )}
         </View>
 
         {/* Search Bar */}
@@ -378,16 +372,6 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 24, fontWeight: '700' },
   headerSubtitle: { fontSize: 13, marginTop: 2 },
-  headerBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.one,
-    borderRadius: 8,
-    gap: Spacing.one,
-  },
-  liveDot: { width: 6, height: 6, borderRadius: 3 },
-  liveText: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
   scroll: { paddingHorizontal: Spacing.four, paddingTop: Spacing.two, gap: Spacing.four },
   searchBarWrapper: {
     paddingHorizontal: Spacing.four,

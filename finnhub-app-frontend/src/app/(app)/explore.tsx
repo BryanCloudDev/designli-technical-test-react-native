@@ -12,16 +12,11 @@ import { useTheme } from '@/hooks/use-theme';
 type MenuItem = {
   label: string;
   icon: string;
-  danger?: boolean;
 };
 
 const MENU_ITEMS: MenuItem[] = [
-  { label: 'Notifications', icon: '🔔' },
   { label: 'Price Alerts', icon: '📈' },
   { label: 'Watchlists', icon: '⭐' },
-  { label: 'Privacy & Security', icon: '🔒' },
-  { label: 'Help & Support', icon: '💬' },
-  { label: 'About Finnhub', icon: 'ℹ️' },
 ];
 
 export default function AccountScreen() {
