@@ -34,6 +34,7 @@ export default tseslint.config(
       '@typescript-eslint/unbound-method': 'off',
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
       '@typescript-eslint/no-unsafe-call': 'off',
+      "@typescript-eslint/no-unsafe-return": 'off',
     },
   },
 );
