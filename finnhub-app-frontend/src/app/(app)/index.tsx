@@ -207,21 +207,8 @@ export default function MarketsScreen() {
           )}
         </View>
 
-        <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingBottom: BottomTabInset + Spacing.four }]}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          refreshControl={
-            !isSearchMode ? (
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                tintColor={theme.accent}
-              />
-            ) : undefined
-          }>
-
-          {/* Search Bar */}
+        {/* Search Bar */}
+        <View style={styles.searchBarWrapper}>
           <View
             style={[
               styles.searchBar,
@@ -244,6 +231,21 @@ export default function MarketsScreen() {
               </Pressable>
             )}
           </View>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={[styles.scroll, { paddingBottom: BottomTabInset + Spacing.four }]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            !isSearchMode ? (
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor={theme.accent}
+              />
+            ) : undefined
+          }>
 
           {/* ── Search mode ── */}
           {isSearchMode && (
@@ -386,7 +388,12 @@ const styles = StyleSheet.create({
   },
   liveDot: { width: 6, height: 6, borderRadius: 3 },
   liveText: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
-  scroll: { paddingHorizontal: Spacing.four, paddingTop: Spacing.four, gap: Spacing.four },
+  scroll: { paddingHorizontal: Spacing.four, paddingTop: Spacing.two, gap: Spacing.four },
+  searchBarWrapper: {
+    paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.four,
+    paddingBottom: Spacing.two,
+  },
 
   // Search
   searchBar: {
