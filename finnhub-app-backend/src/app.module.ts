@@ -10,6 +10,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { StocksModule } from './stocks/stocks.module';
 
 @Module({
   imports: [
@@ -19,11 +20,11 @@ import { UserModule } from './user/user.module';
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: process.env.DB_HOSTNAME,
-      port: Number(process.env.DB_PORT) || 3306,
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
+      host: process.env.DATABASE_HOST,
+      port: Number(process.env.DATABASE_PORT) || 3306,
+      username: process.env.DATABASE_USERNAME,
+      password: process.env.DATABASE_PASSWORD,
+      database: process.env.DATABASE_NAME,
       autoLoadEntities: true,
       synchronize: true,
     }),
@@ -37,6 +38,7 @@ import { UserModule } from './user/user.module';
     ]),
     AuthModule,
     UserModule,
+    StocksModule,
   ],
   controllers: [AppController],
   providers: [
