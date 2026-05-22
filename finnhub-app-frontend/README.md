@@ -1,56 +1,73 @@
-# Welcome to your Expo app 👋
+# Finnhub App Frontend
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native (Expo) mobile app for browsing real-time stock data, managing a watchlist, and setting price alerts with push notifications.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Authentication** — Login, register, forgot/reset password with JWT token storage
+- **Markets** — Browse popular stocks, search by symbol, view live prices
+- **Stock Detail** — Real-time price chart with WebSocket trade updates
+- **Watchlist** — Add/remove stocks; persisted per user
+- **Price Alerts** — Set target price thresholds; triggered alerts deliver FCM push notifications
+- **Dark / Light Theme** — Toggle manually or follow system preference; persisted across sessions
 
-   ```bash
-   npm install
-   ```
+## Screens
 
-2. Start the app
+| Route | Description |
+|-------|-------------|
+| `/login` | Email/password login |
+| `/register` | Account creation |
+| `/forgot-password` | Request password reset |
+| `/reset-password` | Complete password reset via token |
+| `/(app)` | Markets tab — stock list & search |
+| `/(app)/explore` | Account tab — profile & settings |
+| `/stock/[symbol]` | Stock detail with price chart |
+| `/price-alerts` | Create and manage price alerts |
+| `/watchlists` | View and manage watchlist |
 
-   ```bash
-   npx expo start
-   ```
+## Tech Stack
 
-In the output, you'll find options to open the app in a
+- **Framework** — Expo ~55, React Native 0.83, React 19
+- **Routing** — Expo Router (file-based)
+- **State** — React Context (`AuthContext`, `ThemeContext`)
+- **Real-time** — Socket.io client (`/stocks` namespace)
+- **Notifications** — Firebase Cloud Messaging via `expo-notifications`
+- **Storage** — `expo-secure-store` (native) / `localStorage` (web)
+- **Charts** — `react-native-svg` + `react-native-reanimated`
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Project Setup
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Create a `.env.local` file:
 
-### Other setup steps
+```env
+EXPO_PUBLIC_API_URL=http://<your-local-ip>:3000/api
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+> Use your machine's local IP (not `localhost`) when running on a physical device or Android emulator.
 
-## Learn more
+## Running the App
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+# Start Expo dev server
+npx expo start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Then open in:
+- **iOS Simulator** — press `i`
+- **Android Emulator** — press `a`
+- **Physical device** — scan the QR code with Expo Go
 
-## Join the community
+## Push Notifications (FCM)
 
-Join our community of developers creating universal apps.
+A `google-services.json` file (Android) is required for FCM. Place it in the project root. The app requests notification permissions on startup and registers the device token with the backend.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Key Architecture Notes
+
+- Navigation is guarded by `AuthContext`; unauthenticated users are redirected to `/login`
+- `useTrade(symbol)` hook manages WebSocket subscriptions with auto-connect/disconnect
+- Themed components (`ThemedView`, `ThemedText`) pull colors from `ThemeContext`
+- Platform splits for web vs. native: `*.web.ts` files override their native counterparts
