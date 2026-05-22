@@ -23,7 +23,7 @@ A NestJS REST API that powers the Finnhub mobile app — providing real-time sto
 | GET | `/api/stocks` | Yes | 20 popular stocks with live quotes |
 | GET | `/api/stocks/search?q=` | Yes | Search stocks (top 10 results) |
 | GET | `/api/stocks/:symbol/quote` | Yes | Current quote for a symbol |
-| GET | `/api/stocks/:symbol/price-history` | Yes | Price history (up to 200 points, ~6.5h) |
+| GET | `/api/stocks/:symbol/price-history` | Yes | Price history (seeded 91-day DB data + live in-memory points) |
 | POST | `/api/watchlist` | Yes | Add stock to watchlist |
 | GET | `/api/watchlist` | Yes | List watchlist items |
 | DELETE | `/api/watchlist/:id` | Yes | Remove from watchlist |
@@ -92,8 +92,88 @@ npm run start:prod
 
 ## Running with Docker
 
+Docker Compose handles the full stack: MySQL, the database seeder, and the API — in the correct order.
+
+### First run
+
+```bash
+# Build images and start everything
+docker compose up --build
+```
+
+**Startup order:**
+
+1. **`mysql`** — starts and waits until the health check passes
+2. **`seeder`** — connects to MySQL, seeds the database, and exits
+3. **`api`** — starts only after the seeder exits successfully
+
+On the first run the seeder creates:
+- A default user with pre-filled watchlist and price alerts
+- 91 days of synthetic price history for 20 popular stocks (fetched from Finnhub at real current prices)
+
+On every subsequent run the seeder detects existing data, skips the insert, and prints the dev guide — so credentials are always visible in the logs.
+
+### Viewing seeder output
+
+```bash
+# Follow seeder logs during startup
+docker compose logs -f seeder
+```
+
+Sample output:
+
+```
+  LOGIN CREDENTIALS
+  -------------------------------------
+  Email    : admin@finnhub.dev
+  Password : Admin1234!
+
+  SEEDED STOCKS (open any of these to see the full chart)
+  SYMBOL    CURRENT PRICE  NAME
+  AAPL          $198.45  Apple Inc.   [watchlist, alert]
+  MSFT          $415.22  Microsoft Corporation  [watchlist, alert]
+  ...
+
+  HOW TO TEST
+  1. Log in with the credentials above
+  2. Open any stock (e.g. AAPL, NVDA, TSLA) to see the chart
+  3. All period tabs (1D 5D 1M 6M) should be active
+```
+
+### Subsequent runs (no rebuild needed)
+
 ```bash
 docker compose up
+```
+
+### Running in detached mode
+
+```bash
+docker compose up -d
+
+# Check that all services came up
+docker compose ps
+
+# Follow the API logs
+docker compose logs -f api
+```
+
+### Re-seeding from scratch
+
+To wipe all data and re-seed with fresh prices:
+
+```bash
+# Stop containers and remove the database volume
+docker compose down -v
+
+# Bring everything back up — seeder will run fresh
+docker compose up --build
+```
+
+### Stopping
+
+```bash
+docker compose down
 ```
 
 ## Tests

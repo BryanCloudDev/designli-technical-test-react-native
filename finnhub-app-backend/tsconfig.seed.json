@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolvePackageJsonExports": false
+  },
+  "include": ["src/database/seeder/**/*", "src/**/*.entity.ts", "src/user/**/*", "src/price-alerts/**/*", "src/watchlist/**/*", "src/stocks/entities/**/*"]
+}

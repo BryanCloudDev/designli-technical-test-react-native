@@ -24,19 +24,7 @@ See each package's README for full details:
 
 ## Quick Start
 
-### 1. Install dependencies
-
-```bash
-npm install
-```
-
-### 2. Start the database
-
-```bash
-docker compose -f finnhub-app-backend/docker-compose.yml up -d
-```
-
-### 3. Configure environment
+### 1. Configure environment
 
 ```bash
 cp finnhub-app-backend/.env.example finnhub-app-backend/.env
@@ -44,18 +32,64 @@ cp finnhub-app-backend/.env.example finnhub-app-backend/.env
 ```
 
 ```bash
-# finnhub-app-frontend/.env.local
+# finnhub-app-frontend — create .env.local
 EXPO_PUBLIC_API_URL=http://<your-local-ip>:3000/api
 ```
 
-### 4. Run both apps
+### 2. Start the backend with Docker
 
 ```bash
-# Backend (watch mode)
-npm run backend
+cd finnhub-app-backend
+docker compose up --build
+```
 
-# Frontend (in a separate terminal)
+This starts three services in order:
+
+| Service | Role |
+|---------|------|
+| `mysql` | Database — waits until healthy |
+| `seeder` | Seeds DB with a default user, 20 stocks (91 days of price history), 5 price alerts, and a 10-item watchlist, then exits |
+| `api` | NestJS REST + WebSocket server — starts after seeder completes |
+
+The seeder prints login credentials and a full test guide every time it runs. View them with:
+
+```bash
+docker compose logs seeder
+```
+
+**Default credentials (created by the seeder):**
+
+```
+Email    : admin@finnhub.dev
+Password : Admin1234!
+```
+
+### 3. Install frontend dependencies
+
+```bash
+npm install
+```
+
+### 4. Start the frontend
+
+```bash
 npm run frontend
+```
+
+---
+
+## Local Development (without Docker)
+
+```bash
+# Install all workspace dependencies
+npm install
+
+# Start a MySQL instance separately, then:
+npm run backend    # NestJS in watch mode
+npm run frontend   # Expo dev server (separate terminal)
+
+# Seed the local database
+npm run seed       # run from finnhub-app-backend/
 ```
 
 ## Workspace Scripts
@@ -67,3 +101,9 @@ npm run frontend
 | `npm run build` | Build backend for production |
 | `npm run test` | Run backend unit tests |
 | `npm run lint` | Lint all packages |
+
+Run from `finnhub-app-backend/`:
+
+| Command | Description |
+|---------|-------------|
+| `npm run seed` | Seed database with default user and stock data |

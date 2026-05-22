@@ -4,7 +4,9 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { Repository } from 'typeorm';
 
 import {
   FinnhubQuote,
@@ -19,6 +21,7 @@ import {
   PricePoint,
   PriceHistoryResponse,
 } from './interfaces/price-history.interface';
+import { StockPriceHistory } from './entities/stock-price-history.entity';
 import { PriceAlertsService } from 'src/price-alerts/price-alerts.service';
 import { errorHandler } from 'src/common/error/error-handler';
 import { HttpClient } from 'src/common/http/http-client';
@@ -121,6 +124,8 @@ export class StocksService implements OnModuleInit, OnModuleDestroy {
   >();
 
   constructor(
+    @InjectRepository(StockPriceHistory)
+    private readonly priceHistoryRepo: Repository<StockPriceHistory>,
     private readonly httpClient: HttpClient,
     private readonly configService: ConfigService,
     private readonly priceAlertsService: PriceAlertsService,
@@ -298,18 +303,37 @@ export class StocksService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Returns the accumulated price history for a symbol, suitable for rendering
-   * a price-over-time line chart on the React Native side.
-   * Points are ordered oldest → newest (up to MAX_HISTORY_POINTS entries).
+   * Returns price history for charting, merging DB-persisted seeded data with
+   * live in-memory points collected since the last restart.
+   * Points are ordered oldest → newest.
    *
    * @param symbol - Ticker symbol, e.g. 'AAPL'.
    */
-  getPriceHistory(symbol: string): PriceHistoryResponse {
+  async getPriceHistory(symbol: string): Promise<PriceHistoryResponse> {
     const s = symbol.toUpperCase();
-    return {
-      symbol: s,
-      points: this.priceHistory.get(s) ?? [],
-    };
+
+    const dbRows = await this.priceHistoryRepo.find({
+      where: { symbol: s },
+      order: { timestamp: 'ASC' },
+    });
+
+    this.logger.debug(`getPriceHistory(${s}): ${dbRows.length} rows from DB`);
+
+    const merged = new Map<number, number>();
+
+    for (const row of dbRows) {
+      merged.set(Number(row.timestamp), Number(row.price));
+    }
+
+    for (const p of this.priceHistory.get(s) ?? []) {
+      merged.set(p.timestamp, p.price);
+    }
+
+    const points = Array.from(merged.entries())
+      .map(([timestamp, price]) => ({ timestamp, price }))
+      .sort((a, b) => a.timestamp - b.timestamp);
+
+    return { symbol: s, points };
   }
 
   private addPricePoint(symbol: string, point: PricePoint): void {

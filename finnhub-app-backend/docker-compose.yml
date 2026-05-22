@@ -28,6 +28,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      seeder:
+        condition: service_completed_successfully
     env_file:
       - .env
     environment:
@@ -44,6 +46,29 @@ services:
       FIREBASE_PRIVATE_KEY: ${FIREBASE_PRIVATE_KEY}
     ports:
       - "${PORT:-3000}:${PORT:-3000}"
+
+  # Runs automatically before the api starts. Uses the builder stage (has
+  # ts-node + all dev deps). Idempotent — skips gracefully if already seeded.
+  seeder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: finnhub_seeder
+    command: npm run seed
+    restart: "no"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_HOST: mysql
+      DATABASE_PORT: ${DATABASE_PORT:-3306}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-gymuser}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-rootpassword}
+      DATABASE_NAME: ${DATABASE_NAME:-admin_gym_db}
+      FINNHUB_API_KEY: ${FINNHUB_API_KEY}
 
 volumes:
   mysql_data:
