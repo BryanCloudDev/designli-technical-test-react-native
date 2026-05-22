@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
 
 /**
  * Requests notification permissions and returns the native FCM device token
- * (Android) or APNs token (iOS) that the backend expects.
+ * (Android) that the backend expects.
  *
  * Returns `null` when:
  * - Running on a simulator/emulator (FCM tokens require a physical device).
