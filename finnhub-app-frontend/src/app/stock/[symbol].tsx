@@ -18,6 +18,8 @@ import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth.context';
 import { useTrade } from '@/hooks/use-trade';
 import { useTheme } from '@/hooks/use-theme';
+import { Ionicons } from '@expo/vector-icons';
+
 import { PricePoint, stocksApi, StockQuote, watchlistApi, WatchlistItem } from '@/services/api';
 
 // ── Stat tile ─────────────────────────────────────────────────────────────────
@@ -198,9 +200,11 @@ export default function StockDetailScreen() {
               {watchlistLoading ? (
                 <ActivityIndicator size="small" color={theme.accent} />
               ) : (
-                <Text style={[styles.starIcon, { color: watchlistItem ? theme.accent : theme.textSecondary }]}>
-                  {watchlistItem ? '★' : '☆'}
-                </Text>
+                <Ionicons
+                  name={watchlistItem ? 'star' : 'star-outline'}
+                  size={24}
+                  color={watchlistItem ? theme.accent : theme.textSecondary}
+                />
               )}
             </Pressable>
           </View>
@@ -337,7 +341,6 @@ const styles = StyleSheet.create({
   liveDot: { width: 6, height: 6, borderRadius: 3 },
   liveText: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
   starBtn: { padding: Spacing.one },
-  starIcon: { fontSize: 24 },
 
   // Error
   errorContainer: {

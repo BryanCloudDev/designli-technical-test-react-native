@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 import { ThemedView } from '@/components/themed-view';
@@ -57,7 +58,7 @@ function AlertRow({
         {isDeleting ? (
           <ActivityIndicator size="small" color={theme.loss} />
         ) : (
-          <Text style={[styles.deleteIcon, { color: theme.loss }]}>✕</Text>
+          <Ionicons name="close" size={16} color={theme.loss} />
         )}
       </Pressable>
     </View>
@@ -371,7 +372,7 @@ const styles = StyleSheet.create({
   },
   triggeredText: { fontSize: 11, fontWeight: '600' },
   deleteBtn: { padding: Spacing.one },
-  deleteIcon: { fontSize: 16, fontWeight: '600' },
+  deleteIcon: {},
 
   // States
   centeredPad: {

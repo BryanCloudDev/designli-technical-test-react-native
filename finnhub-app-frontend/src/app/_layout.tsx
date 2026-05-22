@@ -4,6 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
 import { AuthProvider, useAuth } from '@/context/auth.context';
+import { ThemeProvider } from '@/context/theme.context';
 
 // Show notifications even when the app is in the foreground
 Notifications.setNotificationHandler({
@@ -45,8 +46,10 @@ function RootStack() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <RootStack />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <RootStack />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

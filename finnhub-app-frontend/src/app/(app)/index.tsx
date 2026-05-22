@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 import { ThemedView } from '@/components/themed-view';
@@ -221,7 +222,7 @@ export default function MarketsScreen() {
             />
             {searchQuery.length > 0 && (
               <Pressable onPress={() => handleSearchChange('')} hitSlop={8}>
-                <Text style={[styles.searchClear, { color: theme.textSecondary }]}>✕</Text>
+                <Ionicons name="close-circle" size={18} color={theme.textSecondary} />
               </Pressable>
             )}
           </View>
@@ -391,7 +392,7 @@ const styles = StyleSheet.create({
   },
   searchIcon: { fontSize: 20 },
   searchInput: { flex: 1, fontSize: 15, padding: 0 },
-  searchClear: { fontSize: 14 },
+  searchClear: {},
 
   // Portfolio card
   portfolioCard: {

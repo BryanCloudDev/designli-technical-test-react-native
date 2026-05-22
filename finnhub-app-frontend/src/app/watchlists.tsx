@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 import { ThemedView } from '@/components/themed-view';
@@ -49,7 +50,7 @@ function WatchlistRow({
           Added {new Date(item.createdAt).toLocaleDateString()}
         </Text>
       </View>
-      <Text style={[styles.chevron, { color: theme.textSecondary }]}>›</Text>
+      <Ionicons name="chevron-forward" size={18} color={theme.textSecondary} />
       <Pressable
         onPress={onDelete}
         disabled={isDeleting}
@@ -58,7 +59,7 @@ function WatchlistRow({
         {isDeleting ? (
           <ActivityIndicator size="small" color={theme.loss} />
         ) : (
-          <Text style={[styles.deleteIcon, { color: theme.loss }]}>✕</Text>
+          <Ionicons name="close" size={16} color={theme.loss} />
         )}
       </Pressable>
     </Pressable>
@@ -236,9 +237,9 @@ const styles = StyleSheet.create({
   rowInfo: { flex: 1, gap: 2 },
   rowSymbol: { fontSize: 15, fontWeight: '600' },
   rowDate: { fontSize: 13 },
-  chevron: { fontSize: 20, fontWeight: '300' },
+  chevron: {},
   deleteBtn: { padding: Spacing.one },
-  deleteIcon: { fontSize: 16, fontWeight: '600' },
+  deleteIcon: {},
 
   centeredPad: {
     alignItems: 'center',
