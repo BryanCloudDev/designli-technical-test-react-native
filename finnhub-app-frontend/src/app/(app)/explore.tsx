@@ -1,8 +1,8 @@
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Spacing } from '@/constants/theme';
@@ -28,15 +28,17 @@ export default function AccountScreen() {
   const [alertsCount, setAlertsCount] = useState<number | null>(null);
   const [watchlistCount, setWatchlistCount] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!token) return;
-    priceAlertsApi.findAll(token)
-      .then((alerts) => setAlertsCount(alerts.length))
-      .catch(() => setAlertsCount(0));
-    watchlistApi.findAll(token)
-      .then((items) => setWatchlistCount(items.length))
-      .catch(() => setWatchlistCount(0));
-  }, [token]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!token) return;
+      priceAlertsApi.findAll(token)
+        .then((alerts) => setAlertsCount(alerts.length))
+        .catch(() => setAlertsCount(0));
+      watchlistApi.findAll(token)
+        .then((items) => setWatchlistCount(items.length))
+        .catch(() => setWatchlistCount(0));
+    }, [token]),
+  );
 
   function getMenuItemPress(label: string) {
     if (label === 'Price Alerts') return () => router.push('/price-alerts');
