@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from '@nestjs/common';
 
-import { AuthModule } from 'src/auth/auth.module';
 import { PasswordResetToken } from './entities/password-reset-token.entity';
-import { User } from './entities/user.entity';
 import { UserController } from './user.controller';
+import { AuthModule } from 'src/auth/auth.module';
+import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 
 @Module({

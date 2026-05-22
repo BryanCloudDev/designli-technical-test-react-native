@@ -8,38 +8,31 @@ import {
   Post,
   Request,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
-import { Auth } from 'src/auth/decorators/auth.decorator';
+import { MessageResponseDto } from 'src/common/dto/message-response.dto';
 import { CreatePriceAlertDto } from './dto/create-price-alert.dto';
-import { TriggerTestDto } from './dto/trigger-test.dto';
 import { PriceAlertsService } from './price-alerts.service';
+import { PriceAlert } from './entities/price-alert.entity';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { TriggerTestDto } from './dto/trigger-test.dto';
 
-/**
- * REST controller for price alert management under `/price-alerts`.
- *
- * All routes require a valid JWT (Bearer token).
- *
- * Endpoints:
- * - `POST /price-alerts`        — create a new alert.
- * - `GET  /price-alerts`        — list all alerts for the authenticated user.
- * - `DELETE /price-alerts/:id`  — delete an alert by ID.
- */
 @ApiTags('Price Alerts')
 @Auth()
 @Controller('price-alerts')
 export class PriceAlertsController {
   constructor(private readonly priceAlertsService: PriceAlertsService) {}
 
-  /**
-   * Creates a price alert that fires when the symbol's price reaches the
-   * specified target.
-   *
-   * @param req - Express request; `req.user` is the authenticated `User`.
-   * @param dto - Validated body containing `symbol` and `targetPrice`.
-   */
   @Post()
   @ApiOperation({ summary: 'Create a price alert for a stock' })
+  @ApiCreatedResponse({ type: PriceAlert, description: 'Alert created' })
   create(
     @Request() req: { user: { id: string } },
     @Body() dto: CreatePriceAlertDto,
@@ -47,26 +40,21 @@ export class PriceAlertsController {
     return this.priceAlertsService.create(req.user.id, dto);
   }
 
-  /**
-   * Returns all price alerts owned by the authenticated user, newest first.
-   *
-   * @param req - Express request; `req.user` is the authenticated `User`.
-   */
   @Get()
   @ApiOperation({ summary: 'List all price alerts for the authenticated user' })
+  @ApiOkResponse({
+    type: [PriceAlert],
+    description: "User's price alerts, newest first",
+  })
   findAll(@Request() req: { user: { id: string } }) {
     return this.priceAlertsService.findAll(req.user.id);
   }
 
-  /**
-   * Deletes a specific price alert. Only the owner can delete their own alerts.
-   *
-   * @param id  - UUID of the alert to delete.
-   * @param req - Express request; `req.user` is the authenticated `User`.
-   */
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a price alert by ID' })
   @ApiParam({ name: 'id', description: 'Alert UUID' })
+  @ApiOkResponse({ type: MessageResponseDto, description: 'Alert deleted' })
+  @ApiNotFoundResponse({ description: 'Alert not found or not owned by user' })
   remove(
     @Param('id', ParseUUIDPipe) id: string,
     @Request() req: { user: { id: string } },
@@ -74,17 +62,18 @@ export class PriceAlertsController {
     return this.priceAlertsService.remove(id, req.user.id);
   }
 
-  /**
-   * DEV ONLY — simulates a price update for a symbol so you can test alert
-   * notifications without waiting for the market to be open or the poll cycle.
-   *
-   * Example: POST /price-alerts/trigger-test { "symbol": "AAPL", "price": 999 }
-   * Any alert whose targetPrice ≤ 999 will fire immediately.
-   */
   @Post('trigger-test')
-  @ApiOperation({ summary: '[Dev] Simulate a price update to test alert notifications' })
+  @ApiOperation({
+    summary: '[Dev] Simulate a price update to test alert notifications',
+  })
+  @ApiOkResponse({
+    type: MessageResponseDto,
+    description: 'Trigger simulation dispatched',
+  })
   async triggerTest(@Body() dto: TriggerTestDto) {
     await this.priceAlertsService.checkAndTrigger(dto.symbol, dto.price);
-    return { message: `checkAndTrigger called for ${dto.symbol} @ $${dto.price}` };
+    return {
+      message: `checkAndTrigger called for ${dto.symbol} @ $${dto.price}`,
+    };
   }
 }

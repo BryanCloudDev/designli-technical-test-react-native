@@ -2,11 +2,11 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { User } from 'src/user/entities/user.entity';
 import { NotificationsService } from 'src/notifications/notifications.service';
-import { errorHandler } from 'src/common/error/error-handler';
 import { CreatePriceAlertDto } from './dto/create-price-alert.dto';
+import { errorHandler } from 'src/common/error/error-handler';
 import { PriceAlert } from './entities/price-alert.entity';
+import { User } from 'src/user/entities/user.entity';
 
 /**
  * Manages price alerts and triggers FCM notifications when thresholds are met.
@@ -96,7 +96,11 @@ export class PriceAlertsService {
       });
       return [...new Set(alerts.map((a) => a.symbol))];
     } catch (error) {
-      return errorHandler('Failed to fetch pending alert symbols', this.logger, error);
+      return errorHandler(
+        'Failed to fetch pending alert symbols',
+        this.logger,
+        error,
+      );
     }
   }
 

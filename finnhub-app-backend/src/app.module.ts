@@ -4,16 +4,14 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 
-import { JoiValidationSchema } from './common/config/joi.validation';
-import { envConfiguration } from './common/config/env.config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PriceAlertsModule } from './price-alerts/price-alerts.module';
-import { UserModule } from './user/user.module';
-import { StocksModule } from './stocks/stocks.module';
+import { JoiValidationSchema } from './common/config/joi.validation';
 import { WatchlistModule } from './watchlist/watchlist.module';
+import { envConfiguration } from './common/config/env.config';
+import { StocksModule } from './stocks/stocks.module';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -46,9 +44,7 @@ import { WatchlistModule } from './watchlist/watchlist.module';
     PriceAlertsModule,
     WatchlistModule,
   ],
-  controllers: [AppController],
   providers: [
-    AppService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

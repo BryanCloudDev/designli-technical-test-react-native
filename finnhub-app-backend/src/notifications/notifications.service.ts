@@ -2,13 +2,6 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
 
-/**
- * Service responsible for sending Firebase Cloud Messaging (FCM) push
- * notifications to React Native clients.
- *
- * The Firebase Admin SDK is initialised once on module load using the
- * service-account credentials supplied via environment variables.
- */
 @Injectable()
 export class NotificationsService implements OnModuleInit {
   private readonly logger = new Logger(NotificationsService.name);

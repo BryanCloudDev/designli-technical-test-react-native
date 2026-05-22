@@ -21,7 +21,7 @@ export class CreatePriceAlertDto {
     message: 'symbol must be 1-5 uppercase letters (e.g. AAPL)',
   })
   @Transform(({ value }: { value: string }) => value.toUpperCase().trim())
-  symbol: string;
+  symbol!: string;
 
   @ApiProperty({
     example: 150.5,
@@ -29,5 +29,5 @@ export class CreatePriceAlertDto {
   })
   @IsNumber()
   @IsPositive()
-  targetPrice: number;
+  targetPrice!: number;
 }

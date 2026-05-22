@@ -15,21 +15,14 @@ import * as bcrypt from 'bcrypt';
 
 import { PasswordResetToken } from './entities/password-reset-token.entity';
 import { JwtPayload } from 'src/auth/interfaces/jwt-payload.interface';
+import { RegisterFcmTokenDto } from './dto/register-fcm-token.dto';
 import { errorHandler } from 'src/common/error/error-handler';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { LoginDto } from './dto/login.dto';
 import { User } from './entities/user.entity';
-import { RegisterFcmTokenDto } from './dto/register-fcm-token.dto';
+import { LoginDto } from './dto/login.dto';
 
-/**
- * Service responsible for all user-related business logic.
- *
- * Handles registration, look-up, update, and removal of user records.
- * Passwords are never stored in plain text; bcrypt is used with a salt
- * round of 10 before any value reaches the database.
- */
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);

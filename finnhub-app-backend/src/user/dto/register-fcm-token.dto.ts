@@ -7,5 +7,5 @@ export class RegisterFcmTokenDto {
   })
   @IsString()
   @IsNotEmpty()
-  token: string;
+  token!: string;
 }

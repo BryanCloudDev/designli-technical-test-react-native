@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from '@nestjs/common';
 
-import { AuthModule } from 'src/auth/auth.module';
 import { WatchlistItem } from './entities/watchlist-item.entity';
 import { WatchlistController } from './watchlist.controller';
 import { WatchlistService } from './watchlist.service';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([WatchlistItem]), AuthModule],

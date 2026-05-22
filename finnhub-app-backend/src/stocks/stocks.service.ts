@@ -6,9 +6,6 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { errorHandler } from 'src/common/error/error-handler';
-import { HttpClient } from 'src/common/http/http-client';
-import { PriceAlertsService } from 'src/price-alerts/price-alerts.service';
 import {
   FinnhubQuote,
   FinnhubStockSymbol,
@@ -22,6 +19,9 @@ import {
   PricePoint,
   PriceHistoryResponse,
 } from './interfaces/price-history.interface';
+import { PriceAlertsService } from 'src/price-alerts/price-alerts.service';
+import { errorHandler } from 'src/common/error/error-handler';
+import { HttpClient } from 'src/common/http/http-client';
 
 const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
 
@@ -115,7 +115,10 @@ export class StocksService implements OnModuleInit, OnModuleDestroy {
   private pollingTimer: ReturnType<typeof setInterval> | null = null;
 
   // ── Quote cache ────────────────────────────────────────────────────────────
-  private readonly quoteCache = new Map<string, { quote: StockQuote; expiresAt: number }>();
+  private readonly quoteCache = new Map<
+    string,
+    { quote: StockQuote; expiresAt: number }
+  >();
 
   constructor(
     private readonly httpClient: HttpClient,
@@ -266,7 +269,10 @@ export class StocksService implements OnModuleInit, OnModuleDestroy {
         timestamp: data.t,
       };
 
-      this.quoteCache.set(upper, { quote, expiresAt: Date.now() + QUOTE_CACHE_TTL });
+      this.quoteCache.set(upper, {
+        quote,
+        expiresAt: Date.now() + QUOTE_CACHE_TTL,
+      });
       return quote;
     } catch (error) {
       return errorHandler(

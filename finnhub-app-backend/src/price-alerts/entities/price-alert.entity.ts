@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -9,19 +10,19 @@ import {
 
 import { User } from 'src/user/entities/user.entity';
 
-/**
- * Represents a user-defined price threshold for a stock symbol.
- *
- * When the symbol's market price reaches or exceeds `targetPrice`, an FCM
- * push notification is sent to the user's device and `isTriggered` is set to
- * `true` so that the alert fires exactly once.
- */
 @Entity()
 export class PriceAlert {
+  @ApiProperty({
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    description: 'Alert UUID',
+  })
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  /** Foreign key linking the alert to its owner. */
+  @ApiProperty({
+    example: '550e8400-e29b-41d4-a716-446655440001',
+    description: 'Owner user UUID',
+  })
   @Column()
   userId: string;
 
@@ -29,21 +30,29 @@ export class PriceAlert {
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  /** Ticker symbol the alert monitors (e.g. 'AAPL'). Stored in uppercase. */
+  @ApiProperty({
+    example: 'AAPL',
+    description: 'Ticker symbol (1-5 uppercase letters)',
+  })
   @Column({ length: 10 })
   symbol: string;
 
-  /** Price threshold that triggers the notification. */
+  @ApiProperty({
+    example: 150.5,
+    description: 'Price threshold that triggers the notification',
+  })
   @Column('decimal', { precision: 12, scale: 4 })
   targetPrice: number;
 
-  /**
-   * Set to `true` after the notification has been sent.
-   * Prevents the same alert from firing more than once.
-   */
+  @ApiProperty({
+    example: false,
+    description:
+      'True after the notification has fired — prevents duplicate alerts',
+  })
   @Column({ default: false })
   isTriggered: boolean;
 
+  @ApiProperty({ example: '2024-01-15T10:30:00.000Z' })
   @CreateDateColumn()
   createdAt: Date;
 }

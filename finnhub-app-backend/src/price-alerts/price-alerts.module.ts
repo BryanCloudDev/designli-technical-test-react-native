@@ -1,12 +1,12 @@
-import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from '@nestjs/common';
 
-import { AuthModule } from 'src/auth/auth.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
-import { User } from 'src/user/entities/user.entity';
-import { PriceAlert } from './entities/price-alert.entity';
 import { PriceAlertsController } from './price-alerts.controller';
 import { PriceAlertsService } from './price-alerts.service';
+import { PriceAlert } from './entities/price-alert.entity';
+import { User } from 'src/user/entities/user.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [

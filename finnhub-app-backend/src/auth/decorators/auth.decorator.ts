@@ -1,4 +1,5 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiUnauthorizedResponse } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
@@ -13,4 +14,9 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
  * @Get('profile')
  * getProfile() { ... }
  */
-export const Auth = () => applyDecorators(UseGuards(JwtAuthGuard));
+export const Auth = () =>
+  applyDecorators(
+    UseGuards(JwtAuthGuard),
+    ApiBearerAuth('jwt'),
+    ApiUnauthorizedResponse({ description: 'Missing or invalid JWT token' }),
+  );

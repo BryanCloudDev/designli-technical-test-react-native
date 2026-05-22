@@ -1,7 +1,7 @@
 import { DocumentBuilder } from '@nestjs/swagger';
 
 export const config = new DocumentBuilder()
-  .setTitle('Designli Technical Test API')
+  .setTitle('Designli Technical Test Stock API')
   .setDescription(
     'Documentation of the Designli Technical Test API calling Finnhub API ',
   )
@@ -12,4 +12,5 @@ export const config = new DocumentBuilder()
     'https://bryancloud.dev/',
     'bryanportillodev@gmail.com',
   )
+  .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'jwt')
   .build();

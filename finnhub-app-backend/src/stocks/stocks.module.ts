@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { Module } from '@nestjs/common';
 
-import { AuthModule } from 'src/auth/auth.module';
-import { CommonModule } from 'src/common/common.module';
 import { PriceAlertsModule } from 'src/price-alerts/price-alerts.module';
+import { CommonModule } from 'src/common/common.module';
 import { StocksController } from './stocks.controller';
+import { AuthModule } from 'src/auth/auth.module';
 import { StocksGateway } from './stocks.gateway';
 import { StocksService } from './stocks.service';
 
