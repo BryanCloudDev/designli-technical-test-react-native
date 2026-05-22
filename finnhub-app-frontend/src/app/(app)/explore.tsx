@@ -26,7 +26,7 @@ export default function AccountScreen() {
   const theme = useTheme();
   const { colorScheme, toggleTheme } = useAppTheme();
   const router = useRouter();
-  const { token, logout } = useAuth();
+  const { token, user, logout } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
   const [alertsCount, setAlertsCount] = useState<number | null>(null);
   const [watchlistCount, setWatchlistCount] = useState<number | null>(null);
@@ -79,10 +79,10 @@ export default function AccountScreen() {
           {/* Profile Card */}
           <View style={[styles.profileCard, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
             <View style={[styles.avatar, { backgroundColor: theme.gain }]}>
-              <Text style={styles.avatarText}>F</Text>
+              <Text style={styles.avatarText}>{user?.name?.[0]?.toUpperCase() ?? '?'}</Text>
             </View>
             <View style={styles.profileInfo}>
-              <Text style={[styles.profileName, { color: theme.text }]}>Finnhub Investor</Text>
+              <Text style={[styles.profileName, { color: theme.text }]}>{user ? `${user.name} ${user.lastName}` : ''}</Text>
               <Text style={[styles.profileSub, { color: theme.textSecondary }]}>
                 Premium Account
               </Text>

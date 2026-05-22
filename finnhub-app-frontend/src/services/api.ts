@@ -57,6 +57,11 @@ export const authApi = {
       body: JSON.stringify({ token, newPassword }),
     }),
 
+  getProfile: (authToken: string) =>
+    request<{ name: string; lastName: string }>('/user/me', {
+      headers: { Authorization: `Bearer ${authToken}` },
+    }),
+
   registerFcmToken: (deviceToken: string, authToken: string) =>
     request<{ message: string }>('/user/fcm-token', {
       method: 'PATCH',

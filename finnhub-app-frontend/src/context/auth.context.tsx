@@ -7,8 +7,11 @@ import { stockSocket } from '@/services/socket';
 
 const TOKEN_KEY = 'finnhub_auth_token';
 
+type UserProfile = { name: string; lastName: string };
+
 type AuthState = {
   token: string | null;
+  user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 };
@@ -24,24 +27,29 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
     token: null,
+    user: null,
     isAuthenticated: false,
     isLoading: true,
   });
 
   useEffect(() => {
-    secureStorage.getItem(TOKEN_KEY).then((token) => {
-      setState({ token, isAuthenticated: !!token, isLoading: false });
+    secureStorage.getItem(TOKEN_KEY).then(async (token) => {
       if (token) {
+        const user = await authApi.getProfile(token).catch(() => null);
+        setState({ token, user, isAuthenticated: true, isLoading: false });
         getDeviceFcmToken().then((fcmToken) => {
           if (fcmToken) authApi.registerFcmToken(fcmToken, token);
         });
+      } else {
+        setState({ token: null, user: null, isAuthenticated: false, isLoading: false });
       }
     });
   }, []);
 
   const persistToken = useCallback(async (token: string) => {
     await secureStorage.setItem(TOKEN_KEY, token);
-    setState({ token, isAuthenticated: true, isLoading: false });
+    const user = await authApi.getProfile(token).catch(() => null);
+    setState({ token, user, isAuthenticated: true, isLoading: false });
     getDeviceFcmToken().then((fcmToken) => {
       if (fcmToken) authApi.registerFcmToken(fcmToken, token);
     });
@@ -66,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     stockSocket.disconnect();
     await secureStorage.deleteItem(TOKEN_KEY);
-    setState({ token: null, isAuthenticated: false, isLoading: false });
+    setState({ token: null, user: null, isAuthenticated: false, isLoading: false });
   }, []);
 
   return (

@@ -216,6 +216,23 @@ export class UserService {
    * @param dto    - Payload containing the raw FCM token string.
    * @returns A generic success message.
    */
+  async getProfile(userId: string): Promise<{ name: string; lastName: string }> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        select: { name: true, lastName: true },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      return { name: user.name, lastName: user.lastName };
+    } catch (error) {
+      return errorHandler('Failed to get profile', this.logger, error);
+    }
+  }
+
   async registerFcmToken(
     userId: string,
     dto: RegisterFcmTokenDto,

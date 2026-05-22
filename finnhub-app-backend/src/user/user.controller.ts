@@ -1,4 +1,4 @@
-import { Body, Controller, Logger, Patch, Post, Request } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Patch, Post, Request } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -74,6 +74,16 @@ export class UserController {
   @ApiNotFoundResponse({ description: 'Token not found or already used' })
   resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
     return this.userService.resetPassword(dto);
+  }
+
+  @Auth()
+  @Get('me')
+  @ApiOperation({ summary: 'Get the authenticated user profile' })
+  @ApiOkResponse({ description: 'Returns name and lastName of the current user' })
+  getProfile(
+    @Request() req: { user: { id: string } },
+  ): Promise<{ name: string; lastName: string }> {
+    return this.userService.getProfile(req.user.id);
   }
 
   @Auth()
