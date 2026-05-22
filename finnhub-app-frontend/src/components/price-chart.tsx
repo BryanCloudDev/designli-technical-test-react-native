@@ -33,6 +33,16 @@ const PERIOD_MS: Record<Period, number> = {
   '1Y': 365 * 24 * 60 * 60 * 1000,
 };
 
+// Minimum data age (ms) required before a period tab is enabled.
+// Ensures switching periods actually reveals different historical data.
+const PERIOD_MIN_AGE: Record<Period, number> = {
+  '1D': 0,
+  '5D': PERIOD_MS['1D'],
+  '1M': PERIOD_MS['5D'],
+  '6M': PERIOD_MS['1M'],
+  '1Y': PERIOD_MS['6M'],
+};
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function fmtPrice(price: number): string {
@@ -71,6 +81,13 @@ export function PriceChart({ points, color, width, previousClose }: Props) {
 
   const plotW = width - LABEL_W - PAD_RIGHT;
   const gradId = 'priceAreaGrad';
+
+  // Oldest timestamp across all data — drives which period tabs are enabled
+  const oldestTs = useMemo(
+    () => (points.length ? Math.min(...points.map((p) => p.timestamp)) : Date.now()),
+    [points],
+  );
+  const dataAge = Date.now() - oldestTs;
 
   // Filter points to the selected time window
   const filtered = useMemo(() => {
@@ -130,17 +147,23 @@ export function PriceChart({ points, color, width, previousClose }: Props) {
       <View style={styles.tabs}>
         {PERIODS.map((p) => {
           const active = p === period;
+          const enabled = dataAge >= PERIOD_MIN_AGE[p];
           return (
             <Pressable
               key={p}
-              onPress={() => setPeriod(p)}
-              style={[styles.tab, active && { backgroundColor: color + '22' }]}>
+              onPress={() => enabled && setPeriod(p)}
+              style={[
+                styles.tab,
+                active && { backgroundColor: color + '22' },
+                !enabled && styles.tabDisabled,
+              ]}>
               <Text
                 style={[
                   styles.tabText,
-                  { color: active ? color : theme.textSecondary },
+                  { color: active ? color : enabled ? theme.textSecondary : theme.border },
                   active && styles.tabTextActive,
-                ]}>
+                ]}
+                numberOfLines={1}>
                 {p}
               </Text>
             </Pressable>
@@ -223,7 +246,8 @@ export function PriceChart({ points, color, width, previousClose }: Props) {
 // ── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   tabs: { flexDirection: 'row', gap: Spacing.one, marginBottom: Spacing.two },
-  tab: { paddingHorizontal: Spacing.two + 2, paddingVertical: Spacing.one, borderRadius: 8 },
+  tab: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.one + 2, borderRadius: 8 },
+  tabDisabled: { opacity: 0.35 },
   tabText: { fontSize: 13, fontWeight: '500' },
   tabTextActive: { fontWeight: '700' },
   empty: {

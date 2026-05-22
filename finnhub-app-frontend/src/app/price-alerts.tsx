@@ -184,7 +184,7 @@ export default function PriceAlertsScreen() {
               <TextInput
                 value={symbol}
                 onChangeText={(t) => setSymbol(t.toUpperCase())}
-                placeholder="Symbol (e.g. AAPL)"
+                placeholder="Symbol"
                 placeholderTextColor={theme.textSecondary}
                 style={[styles.input, styles.inputSymbol, { color: theme.text }]}
                 autoCapitalize="characters"
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
   },
-  input: { paddingVertical: 12, paddingHorizontal: Spacing.three, fontSize: 15 },
+  input: { paddingVertical: 12, paddingHorizontal: Spacing.three, fontSize: 15, textAlign: 'center' },
   inputSymbol: { flex: 1 },
   inputPrice: { flex: 1.2 },
   inputDivider: { width: 1, alignSelf: 'stretch' },
