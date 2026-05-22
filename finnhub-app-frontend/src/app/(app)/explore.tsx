@@ -8,7 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth.context';
 import { useTheme } from '@/hooks/use-theme';
-import { priceAlertsApi } from '@/services/api';
+import { priceAlertsApi, watchlistApi } from '@/services/api';
 
 type MenuItem = {
   label: string;
@@ -26,16 +26,21 @@ export default function AccountScreen() {
   const { token, logout } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
   const [alertsCount, setAlertsCount] = useState<number | null>(null);
+  const [watchlistCount, setWatchlistCount] = useState<number | null>(null);
 
   useEffect(() => {
     if (!token) return;
     priceAlertsApi.findAll(token)
       .then((alerts) => setAlertsCount(alerts.length))
       .catch(() => setAlertsCount(0));
+    watchlistApi.findAll(token)
+      .then((items) => setWatchlistCount(items.length))
+      .catch(() => setWatchlistCount(0));
   }, [token]);
 
   function getMenuItemPress(label: string) {
     if (label === 'Price Alerts') return () => router.push('/price-alerts');
+    if (label === 'Watchlists') return () => router.push('/watchlists');
     return undefined;
   }
 
@@ -75,7 +80,7 @@ export default function AccountScreen() {
           {/* Portfolio Stats */}
           <View style={styles.statsRow}>
             {[
-              { label: 'Watchlist', value: '6' },
+              { label: 'Watchlist', value: watchlistCount === null ? '…' : String(watchlistCount) },
               { label: 'Alerts', value: alertsCount === null ? '…' : String(alertsCount) },
               { label: 'Portfolios', value: '1' },
             ].map((stat) => (

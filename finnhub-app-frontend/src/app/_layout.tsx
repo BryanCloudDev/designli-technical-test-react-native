@@ -31,6 +31,7 @@ function RootStack() {
         <Stack.Screen name="(app)" />
         <Stack.Screen name="stock/[symbol]" />
         <Stack.Screen name="price-alerts" />
+        <Stack.Screen name="watchlists" />
       </Stack.Protected>
       <Stack.Protected guard={!isAuthenticated}>
         <Stack.Screen name="login" />

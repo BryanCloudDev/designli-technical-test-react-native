@@ -92,7 +92,7 @@ export class PriceAlertsService {
     try {
       const alerts = await this.alertRepository.find({
         where: { isTriggered: false },
-        select: ['symbol'],
+        select: { symbol: true },
       });
       return [...new Set(alerts.map((a) => a.symbol))];
     } catch (error) {

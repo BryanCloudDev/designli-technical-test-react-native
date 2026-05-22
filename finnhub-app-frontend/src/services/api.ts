@@ -127,6 +127,33 @@ export const priceAlertsApi = {
     }),
 };
 
+// ── Watchlist ─────────────────────────────────────────────────────────────────
+
+export type WatchlistItem = {
+  id: string;
+  userId: string;
+  symbol: string;
+  createdAt: string;
+};
+
+export const watchlistApi = {
+  add: (symbol: string, token: string) =>
+    request<WatchlistItem>('/watchlist', {
+      method: 'POST',
+      body: JSON.stringify({ symbol }),
+      headers: authHeader(token),
+    }),
+
+  findAll: (token: string) =>
+    request<WatchlistItem[]>('/watchlist', { headers: authHeader(token) }),
+
+  remove: (id: string, token: string) =>
+    request<{ message: string }>(`/watchlist/${id}`, {
+      method: 'DELETE',
+      headers: authHeader(token),
+    }),
+};
+
 // ── Stocks ────────────────────────────────────────────────────────────────────
 
 export const stocksApi = {

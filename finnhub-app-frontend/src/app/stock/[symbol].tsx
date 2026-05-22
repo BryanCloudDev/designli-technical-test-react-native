@@ -18,7 +18,7 @@ import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/context/auth.context';
 import { useTrade } from '@/hooks/use-trade';
 import { useTheme } from '@/hooks/use-theme';
-import { PricePoint, stocksApi, StockQuote } from '@/services/api';
+import { PricePoint, stocksApi, StockQuote, watchlistApi, WatchlistItem } from '@/services/api';
 
 // ── Stat tile ─────────────────────────────────────────────────────────────────
 
@@ -51,6 +51,10 @@ export default function StockDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Watchlist state
+  const [watchlistItem, setWatchlistItem] = useState<WatchlistItem | null>(null);
+  const [watchlistLoading, setWatchlistLoading] = useState(false);
+
   // Live trade state
   const [isLive, setIsLive] = useState(false);
   const [flashDir, setFlashDir] = useState<'up' | 'down' | null>(null);
@@ -80,6 +84,35 @@ export default function StockDetailScreen() {
     setIsLoading(true);
     load().finally(() => setIsLoading(false));
   }, [load]);
+
+  // Check if this stock is already in the watchlist
+  useEffect(() => {
+    if (!token || !symbol) return;
+    watchlistApi.findAll(token)
+      .then((items) => {
+        const found = items.find((i) => i.symbol === symbol.toUpperCase()) ?? null;
+        setWatchlistItem(found);
+      })
+      .catch(() => {});
+  }, [token, symbol]);
+
+  async function handleWatchlistToggle() {
+    if (!token || watchlistLoading) return;
+    setWatchlistLoading(true);
+    try {
+      if (watchlistItem) {
+        await watchlistApi.remove(watchlistItem.id, token);
+        setWatchlistItem(null);
+      } else {
+        const item = await watchlistApi.add(symbol, token);
+        setWatchlistItem(item);
+      }
+    } catch {
+      // silently ignore — user can retry by tapping again
+    } finally {
+      setWatchlistLoading(false);
+    }
+  }
 
   async function handleRefresh() {
     setRefreshing(true);
@@ -150,14 +183,27 @@ export default function StockDetailScreen() {
           </Pressable>
           <Text style={[styles.headerSymbol, { color: theme.text }]}>{symbol}</Text>
           {/* LIVE badge — appears once first trade arrives */}
-          {isLive ? (
-            <View style={[styles.liveBadge, { backgroundColor: theme.gain + '20' }]}>
-              <View style={[styles.liveDot, { backgroundColor: theme.gain }]} />
-              <Text style={[styles.liveText, { color: theme.gain }]}>LIVE</Text>
-            </View>
-          ) : (
-            <View style={styles.headerSpacer} />
-          )}
+          <View style={styles.headerRight}>
+            {isLive && (
+              <View style={[styles.liveBadge, { backgroundColor: theme.gain + '20' }]}>
+                <View style={[styles.liveDot, { backgroundColor: theme.gain }]} />
+                <Text style={[styles.liveText, { color: theme.gain }]}>LIVE</Text>
+              </View>
+            )}
+            <Pressable
+              onPress={handleWatchlistToggle}
+              disabled={watchlistLoading}
+              hitSlop={8}
+              style={({ pressed }) => [styles.starBtn, { opacity: pressed || watchlistLoading ? 0.5 : 1 }]}>
+              {watchlistLoading ? (
+                <ActivityIndicator size="small" color={theme.accent} />
+              ) : (
+                <Text style={[styles.starIcon, { color: watchlistItem ? theme.accent : theme.textSecondary }]}>
+                  {watchlistItem ? '★' : '☆'}
+                </Text>
+              )}
+            </Pressable>
+          </View>
         </View>
 
         {error ? (
@@ -272,6 +318,13 @@ const styles = StyleSheet.create({
   backText: { fontSize: 17, fontWeight: '500' },
   headerSymbol: { flex: 1, fontSize: 17, fontWeight: '700', textAlign: 'center' },
   headerSpacer: { minWidth: 64 },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    minWidth: 64,
+    justifyContent: 'flex-end',
+  },
   liveBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -279,11 +332,12 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one,
     borderRadius: 8,
     gap: Spacing.one,
-    minWidth: 64,
     justifyContent: 'center',
   },
   liveDot: { width: 6, height: 6, borderRadius: 3 },
   liveText: { fontSize: 11, fontWeight: '700', letterSpacing: 1 },
+  starBtn: { padding: Spacing.one },
+  starIcon: { fontSize: 24 },
 
   // Error
   errorContainer: {

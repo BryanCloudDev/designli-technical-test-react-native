@@ -13,6 +13,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { PriceAlertsModule } from './price-alerts/price-alerts.module';
 import { UserModule } from './user/user.module';
 import { StocksModule } from './stocks/stocks.module';
+import { WatchlistModule } from './watchlist/watchlist.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { StocksModule } from './stocks/stocks.module';
     StocksModule,
     NotificationsModule,
     PriceAlertsModule,
+    WatchlistModule,
   ],
   controllers: [AppController],
   providers: [
